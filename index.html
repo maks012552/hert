@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Heart Animation</title>
+<title>Secret</title>
 
 <style>
 body{
-    margin:0;
     background:black;
-    overflow:hidden;
-}
-canvas{
-    display:block;
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    font-family:Arial;
+    text-align:center;
 }
 </style>
 
@@ -18,123 +20,22 @@ canvas{
 
 <body>
 
-<canvas id="c"></canvas>
-
 <script>
-const canvas = document.getElementById("c");
-const ctx = canvas.getContext("2d");
 
-canvas.width = innerWidth;
-canvas.height = innerHeight;
+let password = prompt("Введите пароль ❤️");
 
-const CENTER_X = canvas.width/2;
-const CENTER_Y = canvas.height/2;
-
-const DRAW_TIME = 12000;
-const START = Date.now();
-
-let particles = [];
-let fireworks = [];
-let fireworksStarted = false;
-
-/* форма сердца */
-function heart(t){
-    return {
-        x:16*Math.pow(Math.sin(t),3),
-        y:-(13*Math.cos(t)
-        -5*Math.cos(2*t)
-        -2*Math.cos(3*t)
-        -Math.cos(4*t))
-    };
+if(password === "1234"){
+    document.body.innerHTML = `
+        <h1>❤️ С днем рождения мамулечка моя! ❤️</h1>
+        <p>Добро пожаловать!</p>
+    `;
+}else{
+    document.body.innerHTML = `
+        <h1>⛔ Доступ закрыт</h1>
+        <p>Неверный пароль</p>
+    `;
 }
 
-/* частицы сердца */
-const TOTAL = 2000;
-
-for(let i=0;i<TOTAL;i++){
-    let t=(i/TOTAL)*Math.PI*2;
-    let p=heart(t);
-
-    particles.push({
-        tx:CENTER_X+p.x*18,
-        ty:CENTER_Y+p.y*18,
-        x:Math.random()*canvas.width,
-        y:Math.random()*canvas.height,
-        size:Math.random()*2+1
-    });
-}
-
-/* салют */
-function createFirework(x,y){
-    for(let i=0;i<80;i++){
-        fireworks.push({
-            x:x,
-            y:y,
-            vx:(Math.random()-0.5)*6,
-            vy:(Math.random()-0.5)*6,
-            life:100
-        });
-    }
-}
-
-function launchFireworks(){
-
-    const places=[
-        [canvas.width*0.2,canvas.height*0.3],
-        [canvas.width*0.8,canvas.height*0.3],
-        [canvas.width*0.3,canvas.height*0.7],
-        [canvas.width*0.7,canvas.height*0.7],
-        [canvas.width*0.5,canvas.height*0.2],
-        [canvas.width*0.5,canvas.height*0.8]
-    ];
-
-    places.forEach(p=>createFirework(p[0],p[1]));
-}
-
-/* анимация */
-function animate(){
-
-    ctx.fillStyle="rgba(0,0,0,0.2)";
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-
-    let progress=(Date.now()-START)/DRAW_TIME;
-    if(progress>1) progress=1;
-
-    /* рисуем сердце */
-    particles.forEach(p=>{
-        p.x+=(p.tx-p.x)*0.02*progress*5;
-        p.y+=(p.ty-p.y)*0.02*progress*5;
-
-        ctx.beginPath();
-        ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
-        ctx.fillStyle="#00ff88";
-        ctx.fill();
-    });
-
-    /* запускаем салют один раз */
-    if(progress===1 && !fireworksStarted){
-        fireworksStarted=true;
-        launchFireworks();
-    }
-
-    /* рисуем салют */
-    fireworks.forEach(f=>{
-        f.x+=f.vx;
-        f.y+=f.vy;
-        f.life--;
-
-        ctx.beginPath();
-        ctx.arc(f.x,f.y,2,0,Math.PI*2);
-        ctx.fillStyle=`hsl(${Math.random()*360},100%,60%)`;
-        ctx.fill();
-    });
-
-    fireworks=fireworks.filter(f=>f.life>0);
-
-    requestAnimationFrame(animate);
-}
-
-animate();
 </script>
 
 </body>
