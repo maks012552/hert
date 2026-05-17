@@ -1,40 +1,200 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Secret</title>
+<meta charset="UTF-8">
+<title>❤️</title>
 
 <style>
 body{
-    background:black;
-    color:white;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    height:100vh;
-    font-family:Arial;
-    text-align:center;
+margin:0;
+background:black;
+overflow:hidden;
+font-family:Arial;
+}
+
+canvas{
+display:block;
 }
 </style>
-
 </head>
 
 <body>
 
+<canvas id="c"></canvas>
+
 <script>
 
-let password = prompt("Введите пароль ❤️");
+const password = "18.05"; // <<< пароль меняй тут
 
-if(password === "1234"){
-    document.body.innerHTML = `
-        <h1>❤️ С днем рождения мамулечка моя! ❤️</h1>
-        <p>Добро пожаловать!</p>
-    `;
-}else{
-    document.body.innerHTML = `
-        <h1>⛔ Доступ закрыт</h1>
-        <p>Неверный пароль</p>
-    `;
+let entered = prompt("Введите пароль ❤️");
+
+if(entered !== password){
+document.body.innerHTML="<h1 style='color:white;text-align:center;margin-top:40vh'>⛔ Доступ закрыт</h1>";
+throw new Error("stop");
 }
+
+const canvas=document.getElementById("c");
+const ctx=canvas.getContext("2d");
+
+canvas.width=innerWidth;
+canvas.height=innerHeight;
+
+const CX=canvas.width/2;
+const CY=canvas.height/2;
+
+let particles=[];
+let fireworks=[];
+
+let stage=0; 
+// 0 сердце
+// 1 текст
+// 2 салют
+
+let startTime=Date.now();
+
+/* ❤️ сердце */
+function heart(t){
+return{
+x:16*Math.pow(Math.sin(t),3),
+y:-(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))
+};
+}
+
+/* создаём сердце */
+function createHeart(){
+particles=[];
+for(let i=0;i<1500;i++){
+let t=i/1500*Math.PI*2;
+let h=heart(t);
+
+particles.push({
+x:Math.random()*canvas.width,
+y:Math.random()*canvas.height,
+tx:CX+h.x*18,
+ty:CY+h.y*18,
+size:2
+});
+}
+}
+
+/* текст частицы */
+function createText(){
+
+particles=[];
+
+let off=document.createElement("canvas");
+let octx=off.getContext("2d");
+
+off.width=canvas.width;
+off.height=canvas.height;
+
+octx.fillStyle="white";
+octx.font="bold 80px Arial";
+octx.textAlign="center";
+
+octx.fillText(
+"С днем рождения мамулечка!",
+CX,
+CY
+);
+
+let data=octx.getImageData(0,0,off.width,off.height).data;
+
+for(let y=0;y<off.height;y+=6){
+for(let x=0;x<off.width;x+=6){
+let index=(y*off.width+x)*4;
+
+if(data[index+3]>150){
+particles.push({
+x:Math.random()*canvas.width,
+y:Math.random()*canvas.height,
+tx:x,
+ty:y,
+size:2
+});
+}
+}
+}
+}
+
+/* салют */
+function firework(x,y){
+for(let i=0;i<80;i++){
+fireworks.push({
+x:x,
+y:y,
+vx:(Math.random()-0.5)*7,
+vy:(Math.random()-0.5)*7,
+life:80
+});
+}
+}
+
+function launchFireworks(){
+
+let spots=[
+[CX,canvas.height*0.2],
+[canvas.width*0.2,canvas.height*0.3],
+[canvas.width*0.8,canvas.height*0.3],
+[canvas.width*0.3,canvas.height*0.7],
+[canvas.width*0.7,canvas.height*0.7],
+[CX,canvas.height*0.85]
+];
+
+spots.forEach(s=>firework(s[0],s[1]));
+}
+
+/* старт */
+createHeart();
+
+function animate(){
+
+ctx.fillStyle="rgba(0,0,0,0.25)";
+ctx.fillRect(0,0,canvas.width,canvas.height);
+
+let elapsed=Date.now()-startTime;
+
+/* смена стадий */
+if(stage===0 && elapsed>6000){
+stage=1;
+startTime=Date.now();
+createText();
+}
+
+if(stage===1 && elapsed>6000){
+stage=2;
+launchFireworks();
+}
+
+/* движение частиц */
+particles.forEach(p=>{
+p.x+=(p.tx-p.x)*0.05;
+p.y+=(p.ty-p.y)*0.05;
+
+ctx.beginPath();
+ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+ctx.fillStyle="#00FFFF";
+ctx.fill();
+});
+
+/* салют */
+fireworks.forEach(f=>{
+f.x+=f.vx;
+f.y+=f.vy;
+f.life--;
+
+ctx.beginPath();
+ctx.arc(f.x,f.y,2,0,Math.PI*2);
+ctx.fillStyle=`hsl(${Math.random()*360},100%,60%)`;
+ctx.fill();
+});
+
+fireworks=fireworks.filter(f=>f.life>0);
+
+requestAnimationFrame(animate);
+}
+
+animate();
 
 </script>
 
